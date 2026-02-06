@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.util.List;
 
 // esta es la clase que simula multiples clientes
-public class Main {
+public class Client {
 
     // 5 partidas (10 jugadores en total)
     private static final int num_games = 5;

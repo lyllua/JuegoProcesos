@@ -1,6 +1,4 @@
-package main;
-
-import client.Player;
+package client;
 
 import java.io.*;
 import java.net.Socket;

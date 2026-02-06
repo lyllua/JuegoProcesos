@@ -4,114 +4,101 @@ import java.io.*;
 import java.net.Socket;
 import java.util.List;
 
+// esta es la clase que simula multiples clientes
 public class Main {
 
-    // Configuramos 5 partidas simultáneas (10 jugadores)
-    private static final int NUM_PARTIDAS = 5;
-    private static final String HOST = "localhost";
-    private static final int PORT = 6000;
+    // 5 partidas (10 jugadores en total)
+    private static final int num_games = 5;
+    private static final String host = "localhost";
+    private static final int port = 6000;
 
     public static void main(String[] args) {
-        // Lanzamos 5 pares de hilos (10 jugadores en total)
-        for (int i = 1; i <= NUM_PARTIDAS; i++) {
-            String nombrePartida = "Mesa-" + i;
+        // lanzamos 5 pares de hilos (10 jugadores)
+        for (int i = 1; i <= num_games; i++) {
+            String gameName = "Table -" + i;
 
-            // Jugador A para la Mesa i
-            new Thread(new ClienteTask(nombrePartida, "JugadorA-" + i)).start();
+            new Thread(new ClientTask(gameName, "Player A - " + i)).start();
 
-            // Jugador B para la Mesa i
-            new Thread(new ClienteTask(nombrePartida, "JugadorB-" + i)).start();
+            new Thread(new ClientTask(gameName, "Player B - " + i)).start();
         }
     }
 
-    /**
-     * Tarea que realiza cada cliente (hilo) de forma independiente.
-     */
-    static class ClienteTask implements Runnable {
-        private String nombrePartida;
+     // esto es lo que realiza cada cliente:
+
+    static class ClientTask implements Runnable {   // necesitamos implementar Runnable para gestionar los hilos
+        private String gameName;
         private String nickname;
 
-        public ClienteTask(String nombrePartida, String nickname) {
-            this.nombrePartida = nombrePartida;
+        public ClientTask(String gameName, String nickname) {
+            this.gameName = gameName;
             this.nickname = nickname;
         }
 
         @Override
         public void run() {
-            try (Socket socket = new Socket(HOST, PORT);
+            try (Socket socket = new Socket(host, port);
                  ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                  ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-                // --- PASO 1: Solicitud de inicio/unión (Acción 1) ---
-                out.writeInt(1); // 1 = Jugar
-                out.writeObject(nombrePartida);
+                // solicitar unirse para jugar
+                out.writeInt(1); // el 1 significa jugar
+                out.writeObject(gameName);
                 out.writeObject(nickname);
-                out.flush();
+                out.flush(); // para enviar todo
 
-                // --- PASO 2: Esperar respuesta del servidor ---
-                // El servidor nos envía la lista de jugadores conectados
-                @SuppressWarnings("unchecked")
-                List<Player> jugadores = (List<Player>) in.readObject();
+                // esperar la respuesta del server
+                // el servidor nos manda una lista de los jugadores
+                @SuppressWarnings("unchecked")  // esto es para que Java ignore la advertencia del tipo de datos
+                List<Player> players = (List<Player>) in.readObject();
 
-                // El servidor nos dice si somos el Host
-                boolean soyHost = in.readBoolean();
+                // somos el host?
+                boolean isHost = in.readBoolean();
 
-                // El servidor nos da el ID único de la partida
+                // id de partida
                 String gameId = (String) in.readObject();
 
-                // El servidor nos da el resultado del juego (Log)
-                String resultado = (String) in.readObject();
+                // resultado de juego
+                String result = (String) in.readObject();
 
-                // --- PASO 3: Mostrar información por consola ---
-                // Sincronizamos la salida para que no se mezclen las líneas en la consola
+                // informacion por consola:
+                // sincronizamos la salida
                 synchronized (System.out) {
-                    System.out.println("******************************************");
-                    System.out.println("CLIENTE: " + nickname + " (Partida: " + nombrePartida + ")");
-                    System.out.println("Lista de Jugadores:");
-                    for (Player p : jugadores) {
+                    System.out.println("-------------------------------------------");
+                    System.out.println("Client: " + nickname + " (Game: " + gameName + ")");
+                    System.out.println("Player list:");
+                    for (Player p : players) {
                         System.out.println(" - " + p);
                     }
-                    System.out.println("\nRESULTADO DEL JUEGO:");
-                    System.out.println(resultado);
-                    System.out.println("¿Soy Anfitrión?: " + (soyHost ? "SÍ (Debo cerrar la partida)" : "NO"));
-                    System.out.println("******************************************\n");
+                    System.out.println("\nGame result:");
+                    System.out.println(result);
+                    System.out.println("Am I Host?: " + (isHost ? "YES (Must close game)" : "NO"));
+                    System.out.println("--------------------------------------------\n");
                 }
 
-                // --- PASO 4: Cerrar partida si soy Host (Punto 6) ---
-                if (soyHost) {
-                    // Pequeña pausa para asegurar que el otro cliente haya recibido sus datos
-                    // antes de que el servidor borre la partida (opcional, pero recomendado en simulación local)
+                // cierro la partida si soy host
+                if (isHost) {
+                    // pausa antes de que el servidor borre la partida para asegurar que el otro cliente haya recibido sus datos
                     Thread.sleep(100);
-
-                    // Re-utilizamos la conexión para enviar la orden de cierre
-                    // Nota: En un caso real complejo, podría ser una conexión nueva,
-                    // pero aquí el servidor espera en el bucle del ClientHandler.
-
-                    // IMPORTANTE: El servidor en mi código anterior procesaba UNA acción y cerraba.
-                    // Para soportar esto, necesitamos que el cliente abra un nuevo socket
-                    // O que el servidor tenga un bucle.
-                    // Dado el diseño anterior 'stateless' por petición (un hilo muere al acabar):
-                    // Abrimos una NUEVA conexión para mandar la orden de cierre.
-
-                    cerrarPartida(gameId);
+                    // abro nueva conexion para cerrar la partida
+                    closeGame(gameId);
                 }
 
             } catch (Exception e) {
-                System.err.println("Error en cliente " + nickname + ": " + e.getMessage());
+                System.err.println("Error in client " + nickname + ": " + e.getMessage());
             }
         }
 
-        private void cerrarPartida(String gameId) {
-            try (Socket socket = new Socket(HOST, PORT);
+        private void closeGame(String gameId) {
+            try (Socket socket = new Socket(host, port);
                  ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                  ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-                out.writeInt(2); // 2 = Finalizar Juego
+                out.writeInt(2); // el 2 es para finalizar el juego
                 out.writeObject(gameId);
                 out.flush();
 
-                String confirmacion = in.readUTF();
-                System.out.println("HOST (" + nickname + ") -> Server: " + confirmacion);
+                String confirmation = in.readUTF();
+                System.out.println("Host (" + nickname + ") -> Server: " + confirmation);
 
             } catch (IOException e) {
                 e.printStackTrace();

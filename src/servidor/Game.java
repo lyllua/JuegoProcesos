@@ -10,35 +10,35 @@ import java.util.UUID;
 
 public class Game implements Serializable {
     private String id;
-    private String tipoJuego;
-    private List<Player> jugadores;
-    private boolean finalizado;
-    private String resultadoLog; // Guardará el resumen de la partida
+    private String gameType;
+    private List<Player> players;
+    private boolean isFinish;
+    private String resultLog; // guarda el resumen de la partida
 
     // Constante para el juego de dados
     public static final int MAX_JUGADORES = 2;
 
-    public Game(String tipoJuego) {
+    public Game(String gameType) {
         // Generamos un ID único corto para identificar la partida
         this.id = UUID.randomUUID().toString().substring(0, 8);
-        this.tipoJuego = tipoJuego;
-        this.jugadores = new ArrayList<>();
-        this.finalizado = false;
+        this.gameType = gameType;
+        this.players = new ArrayList<>();
+        this.isFinish = false;
     }
 
     /**
      * Añade un jugador a la partida si hay hueco.
      */
     public boolean addJugador(Player jugador) {
-        if (jugadores.size() < MAX_JUGADORES) {
-            jugadores.add(jugador);
+        if (players.size() < MAX_JUGADORES) {
+            players.add(jugador);
             return true;
         }
         return false;
     }
 
     public boolean isLleno() {
-        return jugadores.size() == MAX_JUGADORES;
+        return players.size() == MAX_JUGADORES;
     }
 
     /**
@@ -57,7 +57,7 @@ public class Game implements Serializable {
         Player jugadorInicial = null; // No Host
         Player jugadorSegundo = null; // Host
 
-        for (Player p : jugadores) {
+        for (Player p : players) {
             if (!p.isHost()) {
                 jugadorInicial = p;
             } else {
@@ -67,12 +67,12 @@ public class Game implements Serializable {
 
         // Caso de seguridad por si la asignación de host falló externamente
         if (jugadorInicial == null || jugadorSegundo == null) {
-            jugadorInicial = jugadores.get(0);
-            jugadorSegundo = jugadores.get(1);
+            jugadorInicial = players.get(0);
+            jugadorSegundo = players.get(1);
         }
 
         sb.append("\n--- INICIO DE PARTIDA (ID: ").append(id).append(") ---\n");
-        sb.append("Juego: ").append(tipoJuego).append("\n");
+        sb.append("Juego: ").append(gameType).append("\n");
         sb.append("Jugadores: ").append(jugadorInicial.getNickname()).append(" vs ").append(jugadorSegundo.getNickname()).append("\n");
 
         int puntuacion1, puntuacion2;
@@ -100,14 +100,14 @@ public class Game implements Serializable {
         sb.append("¡GANADOR: ").append(ganador.getNickname()).append("!\n");
         sb.append("----------------------------------\n");
 
-        this.resultadoLog = sb.toString();
-        this.finalizado = true;
+        this.resultLog = sb.toString();
+        this.isFinish = true;
     }
 
     // Getters
     public String getId() { return id; }
-    public String getTipoJuego() { return tipoJuego; }
-    public List<Player> getJugadores() { return jugadores; }
-    public boolean isFinalizado() { return finalizado; }
-    public String getResultadoLog() { return resultadoLog; }
+    public String getGameType() { return gameType; }
+    public List<Player> getPlayers() { return players; }
+    public boolean isFinish() { return isFinish; }
+    public String getResultLog() { return resultLog; }
 }

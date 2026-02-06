@@ -92,7 +92,7 @@ public class Server {
             try {
                 // Buscamos si hay alguna partida de este tipo con hueco
                 for (Game g : games) {
-                    if (g.getTipoJuego().equals(tipoJuego) && !g.isLleno()) {
+                    if (g.getGameType().equals(tipoJuego) && !g.isLleno()) {
                         partidaAsignada = g;
                         break;
                     }
@@ -141,7 +141,7 @@ public class Server {
 
             // --- ENVÍO DE RESPUESTA AL CLIENTE (Paso 5) ---
             // 1. Enviamos la lista de jugadores conectados a esa partida
-            out.writeObject(partidaAsignada.getJugadores());
+            out.writeObject(partidaAsignada.getPlayers());
 
             // 2. Informamos si este cliente específico es el anfitrión
             out.writeBoolean(jugador.isHost());
@@ -150,7 +150,7 @@ public class Server {
             out.writeObject(partidaAsignada.getId());
 
             // 4. Enviamos el resultado del juego (Logs generados en Game)
-            out.writeObject(partidaAsignada.getResultadoLog());
+            out.writeObject(partidaAsignada.getResultLog());
 
             out.flush();
         }

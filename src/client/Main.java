@@ -2,10 +2,11 @@ package client;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.SQLOutput;
 import java.util.List;
 
 // esta es la clase que simula multiples clientes
-public class Client {
+public class Main {
 
     // 5 partidas (10 jugadores en total)
     private static final int num_games = 5;
@@ -15,11 +16,11 @@ public class Client {
     public static void main(String[] args) {
         // lanzamos 5 pares de hilos (10 jugadores)
         for (int i = 1; i <= num_games; i++) {
-            String gameName = "Table -" + i;
+            String gameName = "Table-" + i;
 
-            new Thread(new ClientTask(gameName, "Player A - " + i)).start();
+            new Thread(new ClientTask(gameName, "Player A-" + i)).start();
 
-            new Thread(new ClientTask(gameName, "Player B - " + i)).start();
+            new Thread(new ClientTask(gameName, "Player B-" + i)).start();
         }
     }
 
@@ -71,16 +72,19 @@ public class Client {
                     }
                     System.out.println("\nGame result:");
                     System.out.println(result);
-                    System.out.println("Am I Host?: " + (isHost ? "YES (Must close game)" : "NO"));
-                    System.out.println("--------------------------------------------\n");
                 }
 
                 // cierro la partida si soy host
                 if (isHost) {
+                    System.out.println("I am host, closing the game...");
+                    System.out.println("--------------------------------------------\n");
                     // pausa antes de que el servidor borre la partida para asegurar que el otro cliente haya recibido sus datos
                     Thread.sleep(100);
                     // abro nueva conexion para cerrar la partida
                     closeGame(gameId);
+                } else {
+                    System.out.println("I am not the host.");
+                    System.out.println("--------------------------------------------\n");
                 }
 
             } catch (Exception e) {

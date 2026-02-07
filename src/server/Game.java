@@ -73,9 +73,9 @@ public class Game implements Serializable {
             }
         }
 
-        this.resultLog += "\n--- INICIO DE PARTIDA (ID: " + id + ") ---\n";
-        this.resultLog += "Juego: " + gameType + "\n";
-        this.resultLog += "Jugadores: " + playerOne.getNickname() + " vs " + playerTwo.getNickname() + "\n";
+        this.resultLog += "\n--- GAME START (ID: " + id + ") ---\n";
+        this.resultLog += "Game: " + gameType + "\n";
+        this.resultLog += "Players: " + playerOne.getNickname() + " vs " + playerTwo.getNickname() + "\n";
 
         int score1, score2; //Variables para almacenar la tirada de los dados
         int round = 1; //Contador de rondas
@@ -83,16 +83,16 @@ public class Game implements Serializable {
         //Bucle de juego (se repite si hay empate)
         do {
             if (round > 1){
-                this.resultLog += "¡Empate! Se repite la tirada (Ronda " + round + ")...\n";
+                this.resultLog += "Draw! Roll repeated (Round " + round + ")...\n";
             }
 
             //Turno del jugador 1 (no Host)
             score1 = random.nextInt(6) + 1;
-            this.resultLog += " > " + playerOne.getNickname() + " tira... [" + score1 + "]\n";
+            this.resultLog += " > " + playerOne.getNickname() + " rolls... [" + score1 + "]\n";
 
             // Turno del jugador 2 (Host)
             score2 = random.nextInt(6) + 1;
-            this.resultLog += " > " + playerTwo.getNickname() + " tira... [" + score2 + "]\n";
+            this.resultLog += " > " + playerTwo.getNickname() + " rolls... [" + score2 + "]\n";
             round++;
         } while (score1 == score2);
 
@@ -100,7 +100,7 @@ public class Game implements Serializable {
         Player winner = (score1 > score2) ? playerOne : playerTwo;
 
         this.resultLog += "----------------------------------\n";
-        this.resultLog += "¡GANADOR: " + winner.getNickname() + "!\n";
+        this.resultLog += "WINNER: " + winner.getNickname() + "!\n";
         this.resultLog += "----------------------------------\n";
 
         this.isFinished = true;

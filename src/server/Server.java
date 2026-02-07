@@ -16,8 +16,8 @@ public class Server {
     private static Semaphore semaphore = new Semaphore(1);
 
     public static void main(String[] args) {
-        System.out.println("SERVIDOR INICIADO EN PUERTO: " + PORT);
-        System.out.println("Esperando jugadores...");
+        System.out.println("SERVER STARTED ON PORT: " + PORT);
+        System.out.println("Waiting for players...");
 
         //Se abre el puerto en un try catch
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
@@ -71,7 +71,7 @@ public class Server {
                 }
 
             } catch (Exception e) {
-                System.err.println("Error en conexión con cliente: " + e.getMessage());
+                System.err.println("Error in connection with client: " + e.getMessage());
             } finally {
                 //Un finally para que siempre cierre el cliente
                 try {
@@ -128,11 +128,11 @@ public class Server {
                     activeGames.add(assignedGame);
                     //El primero que se une siempre será el host
                     player.setHostStatus(true);
-                    System.out.println("Nueva partida creada (ID: " + assignedGame.getId() + ") por " + nickname);
+                    System.out.println("New game created (ID: " + assignedGame.getId() + ") by " + nickname);
                 } else {
                     //El segundo nunca será el host
                     player.setHostStatus(false);
-                    System.out.println("Jugador " + nickname + " se une a partida " + assignedGame.getId());
+                    System.out.println("Player " + nickname + " joins game " + assignedGame.getId());
                 }
 
                 // Añadimos el jugador a la partida
@@ -153,7 +153,7 @@ public class Server {
             synchronized (assignedGame) {
                 if (!assignedGame.isFull()) {
                     //El primero espera al segundo con .wait()
-                    System.out.println("Jugador " + nickname + " esperando oponente...");
+                    System.out.println("Player " + nickname + " waiting for opponent...");
                     assignedGame.wait();
                 } else {
                     //A la que entre el último jugador directamente juegan y despierta al host
@@ -205,11 +205,11 @@ public class Server {
 
             //Esto sirve para enviar confirmación al cliente:
             if (isDeleted) {
-                System.out.println("Partida finalizada y eliminada de lista: " + gameId);
-                out.writeUTF("Partida " + gameId + " eliminada correctamente.");
+                System.out.println("Game finished and removed from list: " + gameId);
+                out.writeUTF("Game " + gameId + " removed successfully.");
             } else {
                 //Puede pasar si ha habido alguna excepcion durante el codigo
-                out.writeUTF("Error: No se encontró la partida o ya estaba cerrada.");
+                out.writeUTF("Error: Game not found or already closed.");
             }
             out.flush();
         }

@@ -1,8 +1,7 @@
 package client;
 import java.io.Serializable;
 
-// Esta es la clase que representa al jugador
-public class Player implements Serializable {  // implementamos Serializable para enviar el objeto con sockets
+public class Player implements Serializable {  // to send the object through sockets
     private String nickname;
     private String host;
     private int port;
@@ -12,7 +11,7 @@ public class Player implements Serializable {  // implementamos Serializable par
         setNickname(nickname);
         this.host = host;
         this.port = port;
-        this.isHost = false; // por defecto no es anfitrion
+        this.isHost = false; // by default its not the host
     }
 
     public String getNickname() {
@@ -20,7 +19,7 @@ public class Player implements Serializable {  // implementamos Serializable par
     }
 
     public final void setNickname(String nickname) {
-        // nickname no debe superar los 10 caracteres:
+        // nickname must not exceed 10 characters:
         if (nickname != null && nickname.length() > 10) {
             this.nickname = nickname.substring(0, 10);
         } else {

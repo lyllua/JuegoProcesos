@@ -5,16 +5,16 @@ import java.net.Socket;
 import java.sql.SQLOutput;
 import java.util.List;
 
-// esta es la clase que simula multiples clientes
+// class that simulates multiple clients
 public class Main {
 
-    // 5 partidas (10 jugadores en total)
+    // 5 games (10 players in total)
     private static final int num_games = 5;
     private static final String host = "localhost";
     private static final int port = 6000;
 
     public static void main(String[] args) {
-        // lanzamos 5 pares de hilos (10 jugadores)
+        // launch 5 pairs of threads
         for (int i = 1; i <= num_games; i++) {
             String gameName = "Table-" + i;
 
@@ -24,9 +24,7 @@ public class Main {
         }
     }
 
-     // esto es lo que realiza cada cliente:
-
-    static class ClientTask implements Runnable {   // necesitamos implementar Runnable para gestionar los hilos
+    static class ClientTask implements Runnable {  
         private String gameName;
         private String nickname;
 
@@ -41,28 +39,23 @@ public class Main {
                  ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                  ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-                // solicitar unirse para jugar
-                out.writeInt(1); // el 1 significa jugar
+                // request to join and play
+                out.writeInt(1); // 1 means play
                 out.writeObject(gameName);
                 out.writeObject(nickname);
-                out.flush(); // para enviar todo
+                out.flush(); //to send everything
 
-                // esperar la respuesta del server
-                // el servidor nos manda una lista de los jugadores
-                @SuppressWarnings("unchecked")  // esto es para que Java ignore la advertencia del tipo de datos
+                // the server send us a list of players 
+                @SuppressWarnings("unchecked")  
                 List<Player> players = (List<Player>) in.readObject();
 
-                // somos el host?
                 boolean isHost = in.readBoolean();
-
-                // id de partida
+                
                 String gameId = (String) in.readObject();
-
-                // resultado de juego
+                
                 String result = (String) in.readObject();
 
-                // informacion por consola:
-                // sincronizamos la salida
+                // synchronize the console output
                 synchronized (System.out) {
                     System.out.println("-------------------------------------------");
                     System.out.println("Client: " + nickname + " (Game: " + gameName + ")");
@@ -74,13 +67,10 @@ public class Main {
                     System.out.println(result);
                 }
 
-                // cierro la partida si soy host
                 if (isHost) {
                     System.out.println("I am host, closing the game...");
                     System.out.println("--------------------------------------------\n");
-                    // pausa antes de que el servidor borre la partida para asegurar que el otro cliente haya recibido sus datos
                     Thread.sleep(100);
-                    // abro nueva conexion para cerrar la partida
                     closeGame(gameId);
                 } else {
                     System.out.println("I am not the host.");
@@ -97,7 +87,7 @@ public class Main {
                  ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                  ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-                out.writeInt(2); // el 2 es para finalizar el juego
+                out.writeInt(2); // 2 is to finish 
                 out.writeObject(gameId);
                 out.flush();
 
